@@ -249,7 +249,7 @@ body{
 }
 
 .input-cell.top-selected{
-    border-top: none;
+    border-top: 0.5px solid lightgray;
 }
 
 .input-cell.bottom-selected{
@@ -261,7 +261,7 @@ body{
 }
 
 .input-cell.right-selected{
-    border-right: none;
+    border-right: 0.5px solid lightgray;
 }
 
 .menu-icon.selected{
