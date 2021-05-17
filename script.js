@@ -10,15 +10,6 @@ function findRowCol(ele) {
     return [rowId, colId];
 }
 
-let cellData = { "Sheet1": [] };
-let selectedSheet = "Sheet1";
-let totalSheets = 1;
-let lastelyAddedSheetNumber = 1;
-let mousemoved = false;
-let startCellStored = false;
-let startCell;
-let endCell;
-
 for (let i = 1; i <= 100; i++) {
     let str = "";
     let n = i;
@@ -37,29 +28,40 @@ for (let i = 1; i <= 100; i++) {
     $("#rows").append(`<div class="row-name">${i}</div>`);
 }
 
+//perfect scrollbar
+$("#cells").scroll(function () {
+    $("#columns").scrollLeft(this.scrollLeft);
+    $("#rows").scrollTop(this.scrollTop);
+})
+
+let cellData = { "Sheet1": {} };
+let selectedSheet = "Sheet1";
+let totalSheets = 1;
+let lastelyAddedSheetNumber = 1;
+let mousemoved = false;
+let startCellStored = false;
+let startCell;
+let endCell;
+let defaultProperties = {
+    "font-family": "Noto Sans",
+    "font-size": 14,
+    "text": "",
+    "bold": false,
+    "italic": false,
+    "underlined": false,
+    "alignment": "left",
+    "bgcolor": "#fff",
+    "color": "#444",
+    "border": "none"
+}
+
 function loadNewSheet() {
     $("#cells").text("");
     for (let i = 1; i <= 100; i++) {
         let row = $(`<div class="cell-row"></div>`);
-        let rowArray = [];
         for (let j = 1; j <= 100; j++){
             row.append(`<div id="row-${i}-col-${j}" class="input-cell" contenteditable="false"></div>`)
-            rowArray.push(
-                {
-                    "font-family": "Noto Sans",
-                    "font-size": "14",
-                    "text": "",
-                    "bold": false,
-                    "italic": false,
-                    "underlined": false,
-                    "alignment": "left",
-                    "bgcolor": "#fff",
-                    "color": "#444",
-                    "border": "none"
-                }
-            );
         }
-        cellData[selectedSheet].push(rowArray);
         $("#cells").append(row);
     }
     addEventsToCells();
@@ -67,12 +69,6 @@ function loadNewSheet() {
 }
 
 loadNewSheet();
-
-//perfect scrollbar
-$("#cells").scroll(function () {
-    $("#columns").scrollLeft(this.scrollLeft);
-    $("#rows").scrollTop(this.scrollTop);
-})
 
 //Add Events to cells
 function addEventsToCells() {
@@ -84,7 +80,8 @@ function addEventsToCells() {
     $(".input-cell").blur(function () {
         $(this).attr("contenteditable", "false");
         let [rowId, colId] = findRowCol(this);
-        cellData[selectedSheet][rowId - 1][colId - 1].text = $(this).text();
+        updateCellData("text", $(this).text());
+        console.log(cellData);
     })
     
     $(".input-cell").click(function (e) {
@@ -207,7 +204,13 @@ function selectCell(ele, e, topCell, bottomCell, leftCell, rightCell, mouseSelec
 }
 
 function changeHeader([rowId, colId]) {
-    let data = cellData[selectedSheet][rowId - 1][colId - 1];
+    let data;
+    if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
+        data = cellData[selectedSheet][rowId - 1][colId - 1];
+    }
+    else {
+        data = defaultProperties;
+    }
     $("#font-family").val(data["font-family"]);
     $("#font-family").css("font-family", data["font-family"]);
     $("#font-size").val(data["font-size"]);
@@ -250,12 +253,10 @@ $(".menu-selector").change(function (e) {
     }
 
     $(".input-cell.selected").css(key, value);
-    $(".input-cell.selected").each(function (index, data) {
-        let [rowId, colId] = findRowCol(data);
-        cellData[selectedSheet][rowId - 1][colId - 1][key] = value;
-    })
+    updateCellData(key, value);
 })
 
+//need to change
 $("#border").change(function (e) {
     let value = $(this).val();
     $(".input-cell.selected").css("border", "");
@@ -268,40 +269,31 @@ $("#border").change(function (e) {
     else {
         $(".input-cell.selected").css(`border-${value}`, "3px solid #444");
     }
-    $(".input-cell.selected").each(function (index, data) {
-        let [rowId, colId] = findRowCol(data);
-        cellData[selectedSheet][rowId - 1][colId - 1].border = value;
-    })
+    updateCellData("border", value);
 })
 
 $("#bold").click(function (e) {
-    selectFontStyle(this, "bold", "font-weight", "bold");
+    setFontStyle(this, "bold", "font-weight", "bold");
 })
 
 $("#italic").click(function (e) {
-    selectFontStyle(this, "italic","font-style", "italic");
+    setFontStyle(this, "italic","font-style", "italic");
 })
 
 $("#underlined").click(function (e) {
-    selectFontStyle(this, "underlined","text-decoration", "underline"); 
+    setFontStyle(this, "underlined","text-decoration", "underline"); 
 })
 
-function selectFontStyle(ele, property, key, value) {
+function setFontStyle(ele, property, key, value) {
     if ($(ele).hasClass("selected")) {
         $(ele).removeClass("selected");
         $(".input-cell.selected").css(key, "");
-        $(".input-cell.selected").each(function (index, data) {
-            let [rowId, colId] = findRowCol(data);
-            cellData[selectedSheet][rowId - 1][colId - 1][property] = false;
-        })
+        updateCellData(property, false);
     }
     else {
         $(ele).addClass("selected");
         $(".input-cell.selected").css(key, value);
-        $(".input-cell.selected").each(function (index, data) {
-            let [rowId, colId] = findRowCol(data);
-            cellData[selectedSheet][rowId - 1][colId - 1][property] = true;
-        })
+        updateCellData(property, true);
     }
 }
 
@@ -310,11 +302,44 @@ $(".alignment").click(function (e) {
     $(this).addClass("selected");
     let alignment = $(this).attr("data-type");
     $(".input-cell.selected").css("text-align", alignment);
-    $(".input-cell.selected").each(function (index, data) {
-        let [rowId, colId] = findRowCol(data);
-        cellData[selectedSheet][rowId - 1][colId - 1].alignment = alignment;
-    })
+    updateCellData("alignment", alignment);
 })
+
+function updateCellData(property, value) {
+    if (value != defaultProperties[property]) {
+        $(".input-cell.selected").each(function (index, data) {
+            let [rowId, colId] = findRowCol(data);
+            if (cellData[selectedSheet][rowId - 1] == undefined) {
+                cellData[selectedSheet][rowId - 1] = {};
+                cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties }  //{...array/object} is sparse array or object used to make a copy of array or object
+                cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+            }
+            else {
+                if (cellData[selectedSheet][rowId - 1][colId - 1] == undefined) {
+                    cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties };
+                    cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+                }
+                else {
+                    cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+                }
+            }
+        });
+    }
+    else {
+        $(".input-cell.selected").each(function (index, data) {
+            let [rowId, colId] = findRowCol(data);
+            if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
+                cellData[selectedSheet][rowId - 1][colId - 1][property] = value;
+                if (JSON.stringify(cellData[selectedSheet][rowId - 1][colId - 1]) == JSON.stringify(defaultProperties)) {
+                    delete cellData[selectedSheet][rowId - 1][colId - 1];
+                    if(Object.keys(cellData[selectedSheet][rowId - 1]).length == 0) {
+                        delete cellData[selectedSheet][rowId - 1];
+                    }
+                }
+            }
+        });
+    }
+}
 
 $(".color-pick").colorPick({
     'initialColor': '#TYPECOLOR',
@@ -327,18 +352,12 @@ $(".color-pick").colorPick({
             if (this.element.attr("id") == "fill-color") {
                 $("#fill-color-icon").css("border-bottom", `4px solid ${this.color}`);
                 $(".input-cell.selected").css("background-color", this.color);
-                $(".input-cell.selected").each((index, data) => {
-                    let [rowId, colId] = findRowCol(data);
-                    cellData[selectedSheet][rowId - 1][colId - 1].bgcolor = this.color;
-                })
+                updateCellData("bgcolor", this.color);
             }
             else {
                 $("#text-color-icon").css("border-bottom", `4px solid ${this.color}`);
                 $(".input-cell.selected").css("color", this.color);
-                $(".input-cell.selected").each((index, data) => {
-                    let [rowId, colId] = findRowCol(data);
-                    cellData[selectedSheet][rowId - 1][colId - 1].color = this.color;
-                })
+                updateCellData("color", this.color);
             }
         }
     }
@@ -361,74 +380,82 @@ $(".container").click(function(e) {
 });
 
 function selectSheet(ele) {
-    addLoader();
     $(".sheet-tab.selected").removeClass("selected");
     $(ele).addClass("selected");
+    emptySheet();
     selectedSheet = $(ele).text();
     $(".sheet-tab.selected")[0].scrollIntoView({ block: "nearest" });
-    setTimeout(() => {
-        loadSheet();
-        removeLoader();
-    }, 3);
+    loadSheet();
+}
+
+function emptySheet() {
+    let data = cellData[selectedSheet];
+    let rowKeys = Object.keys(data);
+    for(let i of rowKeys) {
+        let rowId = parseInt(i);
+        let colKeys = Object.keys(data[rowId]);
+        for (let j of colKeys) {
+            let colId = parseInt(j);
+            let cell = $(`#row-${rowId + 1}-col-${colId + 1}`);
+            cell.text("");
+            cell.css({
+                "font-family" : "Noto Sans",
+                "font-size" : 14,
+                "background-color" : "#fff",
+                "color": "#444",
+                "font-weight" : "",
+                "font-style" : "",
+                "text-decoration" : "",
+                "text-align": "left",
+                "border": ""
+            });
+            cell.removeClass("border-outer border-top border-left border-bottom border-right");
+        }
+    }
 }
 
 function loadSheet() {
-    $("#cells").text("");
     let data = cellData[selectedSheet];
-    for (let i = 1; i <= data.length; i++){
-        let row = $(`<div class="cell-row"></div>`);
-        for (let j = 1; j <= data[i-1].length; j++){
-            let cell = $(`<div id="row-${i}-col-${j}" class="input-cell" contenteditable="false">${data[i - 1][j - 1].text}</div>`)
+    let rowKeys = Object.keys(data);
+    for(let i of rowKeys) {
+        let rowId = parseInt(i);
+        let colKeys = Object.keys(data[rowId]);
+        for (let j of colKeys) {
+            let colId = parseInt(j);
+            let cell = $(`#row-${rowId + 1}-col-${colId + 1}`);
+            cell.text(data[rowId][colId].text);
             cell.css({
-                "font-family": data[i - 1][j - 1]["font-family"],
-                "font-size": data[i - 1][j - 1]["font-size"] + "px",
-                "background-color": data[i - 1][j - 1]["bgcolor"],
-                "color": data[i - 1][j - 1].color,
-                "font-weight": data[i - 1][j - 1].bold ? "bold" : "",
-                "font-style": data[i - 1][j - 1].italic ? "italic" : "",
-                "text-decoration": data[i - 1][j - 1].underlined ? "underline" : "",
-                "text-align": data[i - 1][j - 1].alignment
+                "font-family" : data[rowId][colId]["font-family"],
+                "font-size" : data[rowId][colId]["font-size"] + "px",
+                "background-color" : data[rowId][colId]["bgcolor"],
+                "color": data[rowId][colId].color,
+                "font-weight" : data[rowId][colId].bold ? "bold" : "",
+                "font-style" : data[rowId][colId].italic ? "italic" : "",
+                "text-decoration" : data[rowId][colId].underlined ? "underline" : "",
+                "text-align" : data[rowId][colId].alignment 
             });
-            data[i - 1][j - 1]["border"] == "none" ? cell.css("border", "") : cell.addClass(`border-${data[i - 1][j - 1]["border"]}`);
-            row.append(cell);
+            data[rowId][colId]["border"] == "none" ? cell.css("border", "") : cell.addClass(`border-${data[rowId][colId]["border"]}`);
         }
-        $("#cells").append(row);
     }
-
-    addEventsToCells();
-}
-
-function addLoader() {
-    $(".container").append(`<div class="sheet-modal-parent">
-                                <div class="loading"></div>
-                            </div>`
-    )
-}
-
-function removeLoader() {
-    $(".sheet-modal-parent").remove();
 }
 
 $(".add-sheet").click(function (e) {
-    addLoader();
+    emptySheet();
     totalSheets++;
     lastelyAddedSheetNumber++;
     while (Object.keys(cellData).includes("Sheet" + lastelyAddedSheetNumber)) {
         lastelyAddedSheetNumber++;
     }
-    cellData[`Sheet${lastelyAddedSheetNumber}`] = [];
+    cellData[`Sheet${lastelyAddedSheetNumber}`] = {};
     selectedSheet = `Sheet${lastelyAddedSheetNumber}`;
     $(".sheet-tab.selected").removeClass("selected");
     $(".sheet-tab-container").append(
         `<div class="sheet-tab selected">Sheet${lastelyAddedSheetNumber}</div>`
     );
     $(".sheet-tab.selected")[0].scrollIntoView({ block: "nearest" });
-    
-    setTimeout(() => {
-        loadNewSheet();
-        removeLoader();
-    }, 3);
-})
+    addSheetTabEventListeners();
+    $("#row-1-col-1").click();
+});
 
 //add sheet tab event listeners
 function addSheetTabEventListeners() {
@@ -522,6 +549,7 @@ function addSheetTabEventListeners() {
     $(".sheet-tab.selected").click(function (e) {
         if (!$(this).hasClass("selected")) {
             selectSheet(this);
+            $("#row-1-col-1").click();
         }
     });
 }
@@ -529,18 +557,26 @@ function addSheetTabEventListeners() {
 function renameSheet() {
     let newSheetName = $(".sheet-modal-input").val();
     if (newSheetName && !Object.keys(cellData).includes(newSheetName)) {
-        cellData[newSheetName] = cellData[selectedSheet];
-        delete cellData[selectedSheet];
+        let newCellData = {};
+        for (let i of Object.keys(cellData)) {
+            if (i == selectedSheet) {
+                newCellData[newSheetName] = cellData[i];
+            }
+            else {
+                newCellData[i] = cellData[i];
+            }
+        }
+        cellData = newCellData;
         selectedSheet = newSheetName;
-
+                    
         $(".sheet-tab.selected").text(newSheetName);
         $(".sheet-modal-parent").remove();
     }
     else {
         $(".error").remove();
-        $(".sheet-modal-input-container").append(
-            `<div class = "error">Sheet Name is not valid or Sheet alredy exists </div>`
-        )
+        $(".sheet-modal-input-container").append(`
+            <div class = "error"> Sheet Name is not valid or Sheet already exists </div>
+        `);
     }
 }
 
@@ -549,15 +585,14 @@ function deleteSheet(ele) {
     let keyArray = Object.keys(cellData);
     let selectedSheetIndex = keyArray.indexOf(selectedSheet);
     let currentSelectedSheet = $(".sheet-tab.selected");
-    delete cellData[selectedSheet];
     if (selectedSheetIndex == 0) {
         selectSheet(currentSelectedSheet.next()[0]);
-        currentSelectedSheet.remove();
     }
     else {
         selectSheet(currentSelectedSheet.prev()[0]);
-        currentSelectedSheet.remove();
     }
+    delete cellData[currentSelectedSheet.text()];
+    currentSelectedSheet.remove();
     totalSheets--;
 }
 
@@ -626,217 +661,37 @@ $(".menu-bar-item").click(function () {
     $(this).addClass("selected");
     if ($(this).text() == "File") {
         let modal = $(`<div class="file-modal">
-                            <div class="file-options-container">
-                                <div id="close-file-modal">
-                                    <span class="material-icons file-option-icon" id="file-close-icon">west</span>
-                                    Close
+                            <div class="file-options-modal">
+                                <div class="close">
+                                    <div class="material-icons close-icon">arrow_circle_down</div>
+                                    <div>Close</div>
                                 </div>
-                                <div class="file-option selected" id="file-option-home">
-                                    <span class="material-icons file-option-icon">home</span>
-                                    Home
+                                <div class="new">
+                                    <div class="material-icons new-icon">insert_drive_file</div>
+                                    <div>New</div>
                                 </div>
-                                <div class="file-option" id="file-option-new">
-                                    <span class="material-icons file-option-icon">description</span>
-                                    New
+                                <div class="open">
+                                    <div class="material-icons open-icon">folder_open</div>
+                                    <div>Open</div>
                                 </div>
-                                <div class="file-option" id="file-option-open">
-                                    <span class="material-icons file-option-icon">folder_open</span>
-                                    Open
-                                </div>
-                            </div>
-                            <div class="file-option-preview-container">
-                                <div class="home-file-option">
-                                    <div class="file-option-title">Home</div>
-                                    <div class="home-option-section">
-                                        <div class="file-option-label">New</div>
-                                        <div class="new-label-container">
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="home-option-section">
-                                        <div class="file-option-label">Recent</div>
-                                        <div class="recent-label-container">
-                                            <div class="recent-file">
-                                                <img class="excel-file-icon"
-                                                    src="https://img.icons8.com/color/35/000000/ms-excel.png" />
-                                                <div class="recent-file-title-container">
-                                                    <div class="recent-file-title">Book 1.xlsx</div>
-                                                    <div class="recent-file-location">Personal</div>
-                                                </div>
-                                            </div>
-                                            <div class="recent-file">
-                                                <img class="excel-file-icon"
-                                                    src="https://img.icons8.com/color/35/000000/ms-excel.png" />
-                                                <div class="recent-file-title-container">
-                                                    <div class="recent-file-title">Book 1.xlsx</div>
-                                                    <div class="recent-file-location">Personal</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="save">
+                                    <div class="material-icons save-icon">save</div>
+                                    <div>Save</div>
                                 </div>
                             </div>
-                        </div>`)
-        $(".container").append(modal);
+                            <div class="file-recent-modal">
 
-        $("#close-file-modal").click(function () {
+                            </div>
+                            <div class="file-transparent-modal"></div>
+                        </div>`);
+        $(".container").append(modal);
+        
+        $(".close, .file-transparent-modal").click(function (e) {
             $(".file-modal").remove();
             let currentSelectedMenubaritem = $(".menu-bar-item.selected");
             $(".menu-bar-item.selected").removeClass("selected");
             currentSelectedMenubaritem.next().addClass("selected");
         })
-        
-        $(".file-option").click(function () {
-            $(".file-option.selected").removeClass("selected");
-            $(this).addClass("selected");
-        })
-
-        $("#file-option-home").click(function (e) {
-            $(".file-option-preview-container").text("");
-            let optionContainer = $(`<div class="home-file-option">
-                                        <div class="file-option-title">Home</div>
-                                        <div class="home-option-section">
-                                            <div class="file-option-label">New</div>
-                                            <div class="new-label-container">
-                                                <div class="new-file-container">
-                                                    <div class="new-file">
-                                                        <div class="material-icons new-file-icon">add</div>
-                                                        <div class="new-file-title">New</div>
-                                                    </div>
-                                                </div>
-                                                <div class="new-file-container">
-                                                    <div class="new-file">
-                                                        <div class="material-icons new-file-icon">add</div>
-                                                        <div class="new-file-title">New</div>
-                                                    </div>
-                                                </div>
-                                                <div class="new-file-container">
-                                                    <div class="new-file">
-                                                        <div class="material-icons new-file-icon">add</div>
-                                                        <div class="new-file-title">New</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="file-option-section">
-                                            <div class="file-option-label">Recent</div>
-                                            <div class="recent-label-container">
-                                                <div class="recent-file">
-                                                    <img class="excel-file-icon" src="https://img.icons8.com/color/35/000000/ms-excel.png"/>
-                                                    <div class="recent-file-title-container">
-                                                        <div class="recent-file-title">Book 1.xlsx</div>
-                                                        <div class="recent-file-location">Personal</div>
-                                                    </div>
-                                                </div>
-                                                <div class="recent-file">
-                                                    <img class="excel-file-icon" src="https://img.icons8.com/color/35/000000/ms-excel.png"/>
-                                                    <div class="recent-file-title-container">
-                                                        <div class="recent-file-title">Book 1.xlsx</div>
-                                                        <div class="recent-file-location">Personal</div>
-                                                    </div>
-                                                </div>
-                                                <div class="recent-file">
-                                                    <img class="excel-file-icon" src="https://img.icons8.com/color/35/000000/ms-excel.png"/>
-                                                    <div class="recent-file-title-container">
-                                                        <div class="recent-file-title">Book 1.xlsx</div>
-                                                        <div class="recent-file-location">Personal</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>`)
-            
-            $(".file-option-preview-container").append(optionContainer);
-        })
-        
-        $("#file-option-new").click(function (e) {
-            $(".file-option-preview-container").text("");
-            let optionContainer = $(`<div class="new-file-option">
-                                        <div class="file-option-title">New</div>
-                                        <div class="new-option-section">
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                            <div class="new-file-container">
-                                                <div class="new-file">
-                                                    <div class="material-icons new-file-icon">add</div>
-                                                    <div class="new-file-title">New</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>`)
-            
-            $(".file-option-preview-container").append(optionContainer);
-        })
-        $("#file-option-open").click(function (e) {
-            $(".file-option-preview-container").text("");
-            let optionContainer = $(`<div class="open-file-option">
-                                        <div class="file-option-title">Open</div>
-                                        <div class="open-option-section">
-                                            <div class="file-option-label">Recent</div>
-                                            <div class="recent-label-container">
-                                                <div class="recent-file">
-                                                    <img class="excel-file-icon"
-                                                        src="https://img.icons8.com/color/35/000000/ms-excel.png" />
-                                                    <div class="recent-file-title-container">
-                                                        <div class="recent-file-title">Book 1.xlsx</div>
-                                                        <div class="recent-file-location">Personal</div>
-                                                    </div>
-                                                </div>
-                                                <div class="recent-file">
-                                                    <img class="excel-file-icon"
-                                                        src="https://img.icons8.com/color/35/000000/ms-excel.png" />
-                                                    <div class="recent-file-title-container">
-                                                        <div class="recent-file-title">Book 1.xlsx</div>
-                                                        <div class="recent-file-location">Personal</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>`)
-            
-            $(".file-option-preview-container").append(optionContainer);
-        })
     }
 })
-
-
 

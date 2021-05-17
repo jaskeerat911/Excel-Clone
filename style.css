@@ -528,180 +528,58 @@ body{
 }
 
 .file-modal{
-    height: 100vh;
-    width: 50rem;
-    background-color: #fff;
     position: absolute;
     top: 0;
-    box-shadow: rgb(0 0 0 / 20%) 30px 0px 30px -30px;
-    display: flex;
-    animation: file-modal 0.2s ease-in-out;
-}
-
-@keyframes file-modal {
-    0%{
-        opacity: 0;
-        top: 0;
-        left: -500px;
-    }
-
-    100%{
-        opacity: 100%;
-        top: 0;
-        left: 0;
-    }
-}
-
-.file-options-container{
+    left: 0;
     height: 100vh;
-    width: 20%;
-    background-color: #107c41;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    width: 100vw;
+    display: flex;
 }
 
-.file-option, #close-file-modal{
+.file-options-modal{
+    height: 100vh;
+    width: 12rem;
     color: #fff;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    height: 2rem;
-    padding: 20px 20px;
+    background-color: #107c41;
 }
 
-.file-option:hover, #close-file-modal:hover{
-    background-color: #0c5f32;
-    cursor: pointer;
-}
-
-.file-option.selected{
-    background-color: #0c5f32;
-    border-left: 3px solid #fff;
-}
-
-#close-file-modal{
-    margin-bottom: 2rem;
-}
-
-.file-option-icon{
-    padding: 15px;
-}
-
-.file-option-preview-container{
+.file-recent-modal{
     height: 100vh;
-    width: 80%;
-}
-
-.home-file-option, .new-file-option, .open-file-option{
-    height: 100vh;
-    width: 100%;
-    padding: 2.5rem 0;
-    animation: file-option 0.3s ease-in;
-}
-
-@keyframes file-option {
-    0%{
-        opacity: 0;
-    }
-
-    100%{
-        opacity: 100%;
-    }
-}
-
-.file-option-title{
-    font-size: 1.7rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    padding: 0 2rem;
-}
-
-.file-option-label{
-    font-weight: 600;
-    padding-left: 2.5rem;
-    margin-bottom: 20px;
-}
-
-.new-label-container, .new-option-section{
-    width: 100%;
-    padding: 0 2rem;
-    margin-bottom: 20px;
-    display: flex;
-}
-
-.new-file-container{
-    width: 33%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.new-file{
-    height: 100%;
-    width: 90%;
-    padding: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    width: calc(50% - 12rem);
     background-color: #fff;
 }
 
-.new-file:hover{
-    background-color: lightgray;
-}
-
-.new-file:hover .new-file-icon{
-    background-color: #fff;
-    box-shadow: 0 0 5px 0;
-}
-
-.new-file-icon{
-    color: #107c41;
-    font-size: 35px;
-    width: 4.5rem;
-    height: 6rem;
+.close, .new, .open, .save{
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    border: 0.5px solid lightgray;
-}
-
-.new-file-title{
-    padding: 5px;
-}
-
-.recent-label-container{
     width: 100%;
-    /* height: 10rem; */
-    padding: 0 2rem;
+    position: relative;
+    font-size: 16px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.close-icon, .new-icon, .save-icon, .open-icon{
+    position: absolute;
+    left: 2.5rem;
+}
+
+.close{
+    margin-top: 20px;
     margin-bottom: 20px;
-    /* background-color: yellow; */
 }
 
-.recent-file{
-    width: 100%;
-    height: 35%;
-    padding: 0.2rem 1rem;
-    display: flex;
-    align-items: center;
+.close-icon{
+    transform: rotate(90deg);
 }
 
-.recent-file:hover{
-    background-color: lightgray;
+.close:hover, .new:hover, .open:hover, .save:hover{
+    background-color: #0c5f32;
+    cursor: pointer;                          
 }
 
-.recent-file-title-container{
-    padding-left: 1.5rem;
-}
-
-.recent-file-location{
-    font-size: 12px;
-    padding: 5px 0; 
-}
-
-.new-option-section{
-    flex-wrap: wrap;
+.file-transparent-modal{
+    width: 50%;
+    height: 100vh;
 }
