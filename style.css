@@ -547,6 +547,7 @@ body{
     height: 100vh;
     width: calc(50% - 12rem);
     background-color: #fff;
+    box-shadow: 0 0 10px 0;
 }
 
 .close, .new, .open, .save{
