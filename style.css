@@ -352,9 +352,30 @@ body{
 }
 
 .sheet-options-modal, .sheet-list-modal{
+    max-height: 10rem;
     position: absolute;
     background-color: #fff;
-    box-shadow: rgb(0 0 0 / 13%) 0px 6.4px 14.4px 0px, rgb(0 0 0 / 11%) 0px 1.2px 3.6px 0px
+    box-shadow: rgb(0 0 0 / 13%) 0px 6.4px 14.4px 0px, rgb(0 0 0 / 11%) 0px 1.2px 3.6px 0px;
+    overflow: auto;
+}
+
+.sheet-list-modal::-webkit-scrollbar{
+    width: 10px;
+}
+/* Track */
+.sheet-list-modal::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #888; 
+}
+  
+  /* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555; 
 }
 
 .option, .sheet-list {
