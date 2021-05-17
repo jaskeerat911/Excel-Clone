@@ -382,7 +382,7 @@ function loadSheet() {
             cell.css({
                 "font-family": data[i - 1][j - 1]["font-family"],
                 "font-size": data[i - 1][j - 1]["font-size"] + "px",
-                "background-color": data[i - 1][j - 1]["bg-color"],
+                "background-color": data[i - 1][j - 1]["bgcolor"],
                 "color": data[i - 1][j - 1].color,
                 "font-weight": data[i - 1][j - 1].bold ? "bold" : "",
                 "font-style": data[i - 1][j - 1].italic ? "italic" : "",
