@@ -368,13 +368,13 @@ body{
 }
 
 /* Handle */
-::-webkit-scrollbar-thumb {
+.sheet-list-modal::-webkit-scrollbar-thumb {
     border-radius: 10px;
     background: #888; 
 }
   
   /* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
+.sheet-list-modal::-webkit-scrollbar-thumb:hover {
     background: #555; 
 }
 
