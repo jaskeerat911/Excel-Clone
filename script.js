@@ -81,7 +81,6 @@ function addEventsToCells() {
         $(this).attr("contenteditable", "false");
         let [rowId, colId] = findRowCol(this);
         updateCellData("text", $(this).text());
-        console.log(cellData);
     })
     
     $(".input-cell").click(function (e) {
@@ -93,6 +92,8 @@ function addEventsToCells() {
         }
         else {
             selectCell(this, e, topCell, bottomCell, leftCell, rightCell);
+            printSelectedCell(rowId, colId);
+            selectRowCol(e, rowId - 1, colId - 1);
         }
     })
     
@@ -100,6 +101,7 @@ function addEventsToCells() {
         e.preventDefault();
         if (e.buttons == 1 && !e.ctrlKey) {
             $(".input-cell.selected").removeClass("selected top-selected  bottom-selected left-selected right-selected");
+            $(".row-name, .column-name").removeClass("selected");
             mousemoved = true;
             if (!startCellStored) {
                 let [rowId, colId] = findRowCol(e.target);
@@ -110,9 +112,28 @@ function addEventsToCells() {
                 let [rowId, colId] = findRowCol(e.target);
                 endCell = { rowId: rowId, colId: colId };
                 selectAllBetweenRange(startCell, endCell);
+                
+
+                if (startCell.rowId >= endCell.rowId) {
+                    if (startCell.colId >= endCell.colId) {
+                        $("#selected-cell").text((startCell.rowId - endCell.rowId + 1) + "R X " + (startCell.colId - endCell.colId + 1) + "C");
+                    }
+                    else {
+                        $("#selected-cell").text((startCell.rowId - endCell.rowId + 1) + "R X " + (endCell.colId - startCell.colId + 1) + "C");
+                    }
+                }
+                else {
+                    if (startCell.colId >= endCell.colId) {
+                        $("#selected-cell").text((endCell.rowId - startCell.rowId + 1) + "R X " + (startCell.colId - endCell.colId + 1) + "C");
+                    }
+                    else {
+                        $("#selected-cell").text((endCell.rowId - startCell.rowId + 1) + "R X " + (endCell.colId - startCell.colId + 1) + "C");
+                    }
+                }
             }
         }
         else if (e.buttons == 0 && mousemoved) {
+            printSelectedCell(startCell.rowId, startCell.colId);
             startCellStored = false;
             mousemoved = false;
         }
@@ -203,6 +224,18 @@ function selectCell(ele, e, topCell, bottomCell, leftCell, rightCell, mouseSelec
     changeHeader(findRowCol(ele));
 }
 
+function printSelectedCell(rowId, colId) {
+    let s = '', t;
+
+    while (colId > 0) {
+        t = (colId - 1) % 26;
+        s = String.fromCharCode(65 + t) + s;
+        colId = (colId - t) / 26 | 0;
+    }
+
+    $("#selected-cell").text(s + rowId);
+}
+
 function changeHeader([rowId, colId]) {
     let data;
     if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
@@ -238,8 +271,22 @@ function selectAllBetweenRange(start, end) {
         for (let j = (start.colId < end.colId ? start.colId : end.colId); j <= (start.colId < end.colId ? end.colId : start.colId); j++){
             let [topCell, bottomCell, leftCell, rightCell] = getTopBottomLeftRight(i, j);
             selectCell($(`#row-${i}-col-${j}`), {}, topCell, bottomCell, leftCell, rightCell, true);
+            selectRowCol({}, i - 1, j - 1, true);
         }
     }
+}
+
+function selectRowCol(e, rowIdx, colIdx, mouseSelection) {
+    if (e.ctrlKey || mouseSelection) {
+        $(".row-name").eq(rowIdx).addClass("selected");
+        $(".column-name").eq(colIdx).addClass("selected");
+    }
+    else {
+        $(".row-name, .column-name").removeClass("selected");
+    }
+
+    $(".row-name").eq(rowIdx).addClass("selected");
+    $(".column-name").eq(colIdx).addClass("selected");
 }
 
 $(".menu-selector").change(function (e) {
