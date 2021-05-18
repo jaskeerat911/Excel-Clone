@@ -34,6 +34,7 @@ $("#cells").scroll(function () {
     $("#rows").scrollTop(this.scrollTop);
 })
 
+let saved = true;
 let cellData = { "Sheet1": {} };
 let selectedSheet = "Sheet1";
 let totalSheets = 1;
@@ -278,15 +279,15 @@ function selectAllBetweenRange(start, end) {
 
 function selectRowCol(e, rowIdx, colIdx, mouseSelection) {
     if (e.ctrlKey || mouseSelection) {
-        $(".row-name").eq(rowIdx).addClass("selected");
-        $(".column-name").eq(colIdx).addClass("selected");
+        $($(".row-name")[rowIdx]).addClass("selected");
+        $($(".column-name")[colIdx]).addClass("selected");
     }
     else {
         $(".row-name, .column-name").removeClass("selected");
     }
 
-    $(".row-name").eq(rowIdx).addClass("selected");
-    $(".column-name").eq(colIdx).addClass("selected");
+    $($(".row-name")[rowIdx]).addClass("selected");
+    $($(".column-name")[colIdx]).addClass("selected");
 }
 
 $(".menu-selector").change(function (e) {
@@ -353,6 +354,7 @@ $(".alignment").click(function (e) {
 })
 
 function updateCellData(property, value) {
+    let prevCellData = JSON.stringify(cellData);
     if (value != defaultProperties[property]) {
         $(".input-cell.selected").each(function (index, data) {
             let [rowId, colId] = findRowCol(data);
@@ -385,6 +387,10 @@ function updateCellData(property, value) {
                 }
             }
         });
+    }
+
+    if (saved && JSON.stringify(cellData) != prevCellData) {
+        saved = false;
     }
 }
 
@@ -502,6 +508,7 @@ $(".add-sheet").click(function (e) {
     $(".sheet-tab.selected")[0].scrollIntoView({ block: "nearest" });
     addSheetTabEventListeners();
     $("#row-1-col-1").click();
+    saved = false;
 });
 
 //add sheet tab event listeners
@@ -618,6 +625,7 @@ function renameSheet() {
                     
         $(".sheet-tab.selected").text(newSheetName);
         $(".sheet-modal-parent").remove();
+        saved = false;
     }
     else {
         $(".error").remove();
@@ -641,6 +649,7 @@ function deleteSheet(ele) {
     delete cellData[currentSelectedSheet.text()];
     currentSelectedSheet.remove();
     totalSheets--;
+    saved = false;
 }
 
 $(".left-scroller").click(function (e) {
@@ -703,11 +712,8 @@ $("#zoom-out").click(function (e) {
     }
 })
 
-$(".menu-bar-item").click(function () {
-    $(".menu-bar-item.selected").removeClass("selected");
-    $(this).addClass("selected");
-    if ($(this).text() == "File") {
-        let modal = $(`<div class="file-modal">
+$("#menu-file").click(function () {
+    let fileModal = $(`<div class="file-modal">
                             <div class="file-options-modal">
                                 <div class="close">
                                     <div class="material-icons close-icon">arrow_circle_down</div>
@@ -731,14 +737,190 @@ $(".menu-bar-item").click(function () {
                             </div>
                             <div class="file-transparent-modal"></div>
                         </div>`);
-        $(".container").append(modal);
+    $(".container").append(fileModal);
+    fileModal.animate({
+        "width": "100vw"
+    }, 200);
+
+    $(".close, .file-transparent-modal, .new, .save, .open").click(function (e) {
+        fileModal.animate({
+            "width": "0vw"
+        }, 200);
+        setTimeout(() => {
+            fileModal.remove();
+        }, 200);
+    });
+
+    $(".new").click(function (e) {
+        if (saved) {
+            newFile();
+        }
+        else {
+            $(".container").append(`<div class="sheet-modal-parent">
+                                    <div class="sheet-delete-modal">
+                                        <div class="sheet-modal-title">
+                                            <span>${$(".title-bar").text()}</span>
+                                        </div>
+                                        <div class="sheet-modal-detail-container">
+                                            <span class="sheet-modal-detail-title">Do you want to save changes?</span>
+                                        </div>
+                                        <div class="sheet-modal-confirmation">
+                                            <div class="button ok-button">Save</div>
+                                            <div class="button cancel-button">No</div>
+                                        </div>
+                                    </div>
+                                </div>`);
+            
+            $(".ok-button").click(function (e) {
+                $(".sheet-modal-parent").remove();
+                saveFile(true);
+            })
+
+            $(".cancel-button").click(function (e) {
+                openFile();
+            });
+        }
+    });
+
+    $(".save").click(function (e) {
+        saveFile();
+    })
+
+    $(".open").click(function (e) {
+        openFile();
+    });
+});
+
+function newFile() {
+    emptySheet();
+    $(".sheet-tab").remove();
+    $(".sheet-tab-container").append(`<div class="sheet-tab selected">Sheet1</div>`);
+    cellData = { "Sheet1": {} };
+    selectedSheet = "Sheet1";
+    totalSheets = 1;
+    lastelyAddedSheetNumber = 1;
+    addSheetTabEventListeners();
+    $("#row-1-col-1").click();
+}
+
+function saveFile(createNewFile) {
+    if (!saved) {
+        $(".container").append(`<div class="sheet-modal-parent">
+                                <div class="sheet-rename-modal">
+                                    <div class="sheet-modal-title">
+                                        <span>Save File</span>
+                                    </div>
+                                    <div class="sheet-modal-input-container">
+                                        <span class="sheet-modal-input-title">File Name:</span>
+                                        <input class="sheet-modal-input" type="text" value="${$(".title-bar").text()}" />
+                                    </div>
+                                    <div class="sheet-modal-confirmation">
+                                        <div class="button ok-button">Save</div>
+                                        <div class="button cancel-button">Cancel</div>
+                                    </div>
+                                </div>
+                            </div>`);
         
-        $(".close, .file-transparent-modal").click(function (e) {
-            $(".file-modal").remove();
-            let currentSelectedMenubaritem = $(".menu-bar-item.selected");
-            $(".menu-bar-item.selected").removeClass("selected");
-            currentSelectedMenubaritem.next().addClass("selected");
-        })
+        $(".ok-button").click(function (e) {
+            fileDownload(createNewFile);
+        });
+
+        $(".sheet-modal-input").keypress(function (e) {
+            if (e.key == "Enter") {
+                fileDownload(createNewFile);
+            }
+        });
+
+        $(".cancel-button").click(function (e) {
+            $(".sheet-modal-parent").remove();
+            if (createNewFile) {
+                newFile();
+            }
+        });
     }
+}
+
+function fileDownload(createNewFile){
+    let fileName = $(".sheet-modal-input").val();
+    if (fileName) {
+        let href = `data:application/json,${encodeURIComponent(JSON.stringify(cellData))}`;
+        let a = $(`<a href=${href} download="${fileName}.json"></a>`);
+        $(".container").append(a)
+        a[0].click();
+        a.remove();
+        $(".sheet-modal-parent").remove();
+        saved = true;
+        if (createNewFile) {
+            newFile();
+        }
+    }
+}
+
+function openFile() {
+    let inputFile = $(`<input type="file" accept="application/json" />`);
+    $(".container").append(inputFile);
+    inputFile.click();
+    inputFile.change(function (e) {
+        let file = e.target.files[0];
+        $(".title-bar").text(file.name.split(".json")[0]);
+        let reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function () {
+            emptySheet();
+            cellData = JSON.parse(reader.result);
+            $(".sheet-tab").remove();
+            let sheets = Object.keys(cellData);
+            for (i of sheets) {
+                $(".sheet-tab-container").append(`<div class="sheet-tab selected">${i}</div>`);
+            }
+            addSheetTabEventListeners();
+            $(".sheet-tab").removeClass("selected");
+            $($(".sheet-tab")[0]).addClass("selected");
+            selectedSheet = sheets[0];
+            totalSheets = sheets.length;
+            lastelyAddedSheetNumber = sheets.length;
+            loadSheet();
+            inputFile.remove();
+        }
+    })
+}
+
+let clipBoard = { startCell: [], cellData: {} };
+
+$("#copy, #cut").click(function (e) {
+    clipBoard.startCell = findRowCol($(".input-cell.selected")[0]);
+    $(".input-cell.selected").each((index, data) => {
+        let [rowId, colId] = findRowCol(data);
+        if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
+            if (!clipBoard.cellData[rowId]) {
+                clipBoard.cellData[rowId] = {};
+            }
+            clipBoard.cellData[rowId][colId] = { ...cellData[selectedSheet][rowId - 1][colId - 1] };
+            if ($(this).text() == "content_cut") {
+                delete cellData[selectedSheet][rowId - 1][colId - 1];
+                if (Object.keys(cellData[selectedSheet][rowId - 1]).length == 0) {
+                    delete cellData[selectedSheet][rowId - 1];
+                }
+            }
+        }
+    })
+    // console.log(cellData);
+    // console.log(clipBoard);
 })
 
+$("#paste").click(function (e) {
+    let startCell = findRowCol($(".input-cell.selected")[0]);
+    let rows = Object.keys(clipBoard.cellData);
+    for (let i of rows) {
+        let cols = Object.keys(clipBoard.cellData[i]);
+        for (let j of cols) {
+            let rowDistance = parseInt(i) - parseInt(clipBoard.startCell[0]);
+            let colDistance = parseInt(j) - parseInt(clipBoard.startCell[1]);
+            if (!cellData[selectedSheet][startCell[0] + rowDistance - 1]) {
+                cellData[selectedSheet][startCell[0] + rowDistance - 1] = {};
+            }
+            cellData[selectedSheet][startCell[0] + rowDistance - 1][startCell[1] + colDistance - 1] = { ...clipBoard.cellData[i][j] };
+        }
+    }
+    loadSheet();
+})

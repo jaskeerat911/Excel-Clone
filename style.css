@@ -97,6 +97,7 @@ body{
 #font-size{
     width: 3.5vw;
     min-width: 55px;
+    font-family: "Arial";
 }
 
 #border{
@@ -452,6 +453,7 @@ body{
     outline-color: #107c41;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+    font-family: "Arial";  
 }
 
 .sheet-modal-confirmation {
@@ -501,21 +503,6 @@ body{
     margin-right: 5px;
 }
 
-.loading{
-    width: 200px;
-    height: 200px;
-    border: 25px solid lightgray;
-    border-radius: 50%;
-    border-top: 25px solid #107c41;
-    border-bottom: 25px solid #107c41;
-    animation: loading 2s linear infinite ;
-}
-
-@keyframes loading {
-    0%{transform: rotate(0deg);}
-    100%{transform: rotate(360deg);}
-}
-
 .sheet-zoom{
     display: flex;
     justify-content: center;
@@ -544,7 +531,7 @@ body{
     top: 0;
     left: 0;
     height: 100vh;
-    width: 100vw;
+    width: 0vw;
     display: flex;
 }
 
