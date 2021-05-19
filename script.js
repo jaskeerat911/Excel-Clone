@@ -350,8 +350,8 @@ $("#search-box").click(function (e) {
                                     <input class="sheet-modal-input" type="text">
                                 </div>
                                 <div class="sheet-modal-confirmation">
-                                    <div class="button ok-button">Find</div>
-                                    <div class="button ok-button">Find All</div>
+                                    <div class="button ok-button find">Find</div>
+                                    <div class="button ok-button findAll">Find All</div>
                                 </div>
                             </div>`)
         $(".container").append(searchModal);
@@ -362,7 +362,7 @@ $("#search-box").click(function (e) {
             $(".error").remove();
         });
         
-        $(".ok-button").click(function (e) {
+        $(".findAll").click(function (e) {
             searchData();
         });
 
@@ -384,8 +384,9 @@ $("#search-box").click(function (e) {
                                     <input class="sheet-modal-input" type="text">
                                 </div>
                                 <div class="sheet-modal-confirmation">
-                                    <div class="button ok-button">Find</div>
-                                    <div class="button replace-button">Replace</div>
+                                    <div class="button ok-button find">Find</div>
+                                    <div class="button ok-button replace">Replace</div>
+                                    <div class="button ok-button replaceAll">Replace All</div>
                                 </div>
                             </div>`);
         $(".container").append(replaceModal);
@@ -396,7 +397,7 @@ $("#search-box").click(function (e) {
             $(".error").remove();
         });
         
-        $(".ok-button").click(function (e) {
+        $(".replaceAll").click(function (e) {
             replaceData();
         });
 
