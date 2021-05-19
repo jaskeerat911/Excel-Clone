@@ -1000,9 +1000,9 @@ function searchData() {
             let cols = Object.keys(data[i]);
             for (let j of cols) {
                 if (searchValue == data[i][j]["text"]) {
-                    console.log(i, j);
-                    console.log($(`#row-${i + 1}-col-${j + 1}`));
-                    console.log($(`#row-1-col-1`));
+                    let searchedRow = parseInt(i + 1);
+                    let searchedCol = parseInt(j + 1);
+                    console.log($(`#row-${searchedRow}-col-${searchedCol}`));
                 }
             }
         }
