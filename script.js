@@ -10,9 +10,8 @@ function findRowCol(ele) {
     return [rowId, colId];
 }
 
-for (let i = 1; i <= 100; i++) {
+function calcColName(n) {
     let str = "";
-    let n = i;
 
     while (n > 0) {
         let rem = n % 26;
@@ -24,6 +23,11 @@ for (let i = 1; i <= 100; i++) {
             n = Math.floor((n / 26));
         }
     }
+    return str;
+}
+
+for (let i = 1; i <= 100; i++) {
+    let str = calcColName(i);
     $("#columns").append(`<div class="column-name">${str}</div>`);
     $("#rows").append(`<div class="row-name">${i}</div>`);
 }
@@ -53,7 +57,9 @@ let defaultProperties = {
     "alignment": "left",
     "bgcolor": "#fff",
     "color": "#444",
-    "border": "none"
+    "border": "none",
+    "upStream": [],
+    "downStream": []
 }
 
 function loadNewSheet() {
@@ -226,15 +232,9 @@ function selectCell(ele, e, topCell, bottomCell, leftCell, rightCell, mouseSelec
 }
 
 function printSelectedCell(rowId, colId) {
-    let s = '', t;
+    let str = calcColName(colId);
 
-    while (colId > 0) {
-        t = (colId - 1) % 26;
-        s = String.fromCharCode(65 + t) + s;
-        colId = (colId - t) / 26 | 0;
-    }
-
-    $("#selected-cell").text(s + rowId);
+    $("#selected-cell").text(str + rowId);
 }
 
 function changeHeader([rowId, colId]) {
@@ -439,6 +439,61 @@ $(".alignment").click(function (e) {
     $(".input-cell.selected").css("text-align", alignment);
     updateCellData("alignment", alignment);
 })
+
+function searchData() {
+    let data = cellData[selectedSheet];
+    let searchValue = $(".sheet-modal-input").val();
+    if (searchValue) {
+        let rows = Object.keys(data);
+        for (let i of rows) {
+            let cols = Object.keys(data[i]);
+            for (let j of cols) {
+                if (searchValue == data[i][j]["text"]) {
+                    let searchedRow = parseInt(i) + 1;
+                    let searchedCol = parseInt(j) + 1;
+                    $(`#row-${searchedRow}-col-${searchedCol}`).addClass("selected");
+                    $(`#row-${searchedRow}-col-${searchedCol}`)[0].scrollIntoView({
+                        behavior: 'auto',
+                        block: 'center',
+                        inline: 'center'
+                    });
+                }
+            }
+        }
+    }
+    else {
+        $(".error").remove();
+        $(".sheet-modal-input-container").append(`
+            <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
+        `);
+    }
+}
+
+function replaceData() {
+    let data = cellData[selectedSheet];
+    let searchValue = $($(".sheet-modal-input")[0]).val();
+    let replaceValue = $($(".sheet-modal-input")[1]).val();
+    if (searchValue) {
+        let rows = Object.keys(data);
+        for (let i of rows) {
+            let cols = Object.keys(data[i]);
+            for (let j of cols) {
+                if (searchValue == data[i][j]["text"]) {
+                    let searchedRow = parseInt(i) + 1;
+                    let searchedCol = parseInt(j) + 1;
+                    $(`#row-${searchedRow}-col-${searchedCol}`).text(replaceValue);
+                    cellData[selectedSheet][i][j]["text"] = replaceValue;
+                }
+            }
+        }
+    }
+    else {
+        $(".error").remove();
+        $(".sheet-modal-input-container").append(`
+            <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
+        `);
+    }
+}
 
 function updateCellData(property, value) {
     let prevCellData = JSON.stringify(cellData);
@@ -983,9 +1038,16 @@ function openFile() {
 }
 
 let clipBoard = { startCell: [], cellData: {} };
+let contentCutted = false;
+let copiedCell;
 
 $("#copy, #cut").click(function (e) {
+    if ($(this).text() == 'content_cut') {
+        contentCutted = true;
+    }
     clipBoard.startCell = findRowCol($(".input-cell.selected")[0]);
+    copiedCell = $(".input-cell.selected");
+    copiedCell.addClass("rotating-dashed")
     $(".input-cell.selected").each((index, data) => {
         let [rowId, colId] = findRowCol(data);
         if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {
@@ -993,24 +1055,26 @@ $("#copy, #cut").click(function (e) {
                 clipBoard.cellData[rowId] = {};
             }
             clipBoard.cellData[rowId][colId] = { ...cellData[selectedSheet][rowId - 1][colId - 1] };
-            if ($(this).text() == "content_cut") {
-                delete cellData[selectedSheet][rowId - 1][colId - 1];
-                if (Object.keys(cellData[selectedSheet][rowId - 1]).length == 0) {
-                    delete cellData[selectedSheet][rowId - 1];
-                }
-            }
         }
     })
-    // console.log(cellData);
-    // console.log(clipBoard);
 })
 
 $("#paste").click(function (e) {
+    copiedCell.removeClass("rotating-dashed");
+    if (contentCutted) {
+        emptySheet();
+    }
     let startCell = findRowCol($(".input-cell.selected")[0]);
     let rows = Object.keys(clipBoard.cellData);
     for (let i of rows) {
         let cols = Object.keys(clipBoard.cellData[i]);
         for (let j of cols) {
+            if (contentCutted) {
+                delete cellData[selectedSheet][i - 1][j - 1];
+                if (Object.keys(cellData[selectedSheet][i - 1]).length == 0) {
+                    delete cellData[selectedSheet][i - 1];
+                }
+            }
             let rowDistance = parseInt(i) - parseInt(clipBoard.startCell[0]);
             let colDistance = parseInt(j) - parseInt(clipBoard.startCell[1]);
             if (!cellData[selectedSheet][startCell[0] + rowDistance - 1]) {
@@ -1020,59 +1084,124 @@ $("#paste").click(function (e) {
         }
     }
     loadSheet();
+    if (contentCutted) {
+        contentCutted = false;
+        clipBoard = { startCell: [], cellData: {} };
+    }
+});
+
+$("#function-input").blur(function (e) {
+    if ($(".input-cell.selected").length > 0) {
+        let formula = $(this).text();
+        $(".input-cell.selected").each(function (index, data) {
+            let tempElements = formula.split(" ");
+            let elements = [];
+            for (let i of tempElements) {
+                if (i.length > 1) {
+                    i = i.replace("(", "");
+                    i = i.replace(")", "");
+                    elements.push(i);
+                }
+            }
+
+            if (updateStreams(data, elements)) {
+                console.log(cellData);
+            }
+            else {
+                alert("Formula is invalid!");
+            }
+        })
+    }
+    else {
+        alert("Please select a cell first ti apply formula");
+    }
 })
 
-function searchData() {
-    let data = cellData[selectedSheet];
-    let searchValue = $(".sheet-modal-input").val();
-    if (searchValue) {
-        let rows = Object.keys(data);
-        for (let i of rows) {
-            let cols = Object.keys(data[i]);
-            for (let j of cols) {
-                if (searchValue == data[i][j]["text"]) {
-                    let searchedRow = parseInt(i) + 1;
-                    let searchedCol = parseInt(j) + 1;
-                    $(`#row-${searchedRow}-col-${searchedCol}`).addClass("selected");
-                    $(`#row-${searchedRow}-col-${searchedCol}`)[0].scrollIntoView({
-                        behavior: 'auto',
-                        block: 'center',
-                        inline: 'center'
-                    });
+function updateStreams(ele, elements) {
+    let [rowId, colId] = findRowCol(ele);
+    for (let i = 0; i < elements.length; i++){
+        if (checkForSelf(rowId, colId, elements[i])) {
+            return false;
+        }
+    }
+
+    if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1] && cellData[selectedSheet][rowId - 1][colId - 1].upStream.length > 0) {
+        let upStream = cellData[selectedSheet][rowId - 1][colId - 1].upStream;
+        console.log(upStream);
+        let selfCode = calcColName(colId) + rowId;
+        for (let i of upStream) {
+            let [calRowId, calColId] = calcSelfValue(i);
+            let index = cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.indexOf(selfCode);
+            cellData[selectedSheet][rowId - 1][colId - 1].downStream.splice(index, 1);
+            if (JSON.stringify(cellData[selectedSheet][calRowId - 1][calColId - 1]) == JSON.stringify(defaultProperties)) {
+                delete cellData[selectedSheet][calRowId - 1][calColId - 1];
+                if (Object.keys(cellData[selectedSheet][calRowId - 1].length == 0)) {
+                    delete cellData[selectedSheet][calRowId - 1];
                 }
             }
         }
     }
+
+    if (!cellData[selectedSheet][rowId - 1]) {
+        cellData[selectedSheet][rowId - 1] = {};
+        cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties };
+    }
+    else if (!cellData[selectedSheet][rowId - 1][colId - 1]) {
+        cellData[selectedSheet][rowId - 1][colId - 1] = { ...defaultProperties };
+    }
+
+    cellData[selectedSheet][rowId - 1][colId - 1].upStream = [];
+    let data = cellData[selectedSheet][rowId - 1][colId - 1];
+    for (let i = 0; i < elements.length; i++){
+        if (data.downStream.includes(elements[i])) {
+            return false;
+        }
+        else {
+            if (!data.upStream.includes(elements[i]) && !checkForSelf(rowId, colId, elements[i])) {
+                data.upStream.push(elements[i]);
+            }
+        }
+    }
+    return true;
+}
+
+function calcSelfValue(ele) {
+    let calRowId, calColId;
+
+    for (let i = 0; i < ele.length; i++){
+        if (!isNaN(ele.charAt(i))) {
+            let leftString = ele.substring(0, i);
+            let rightString = ele.substring(i);
+            calColId = calcColId(leftString);
+            calRowId = parseInt(rightString);
+            break;
+        }
+    }
+    return [calRowId, calColId];
+}
+
+function checkForSelf(rowId, colId, ele) {
+    let [calRowId, calcColId] = calcSelfValue(ele);
+    if (calRowId == rowId && calColId == colId) {
+        return true;
+    }
     else {
-        $(".error").remove();
-        $(".sheet-modal-input-container").append(`
-            <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
-        `);
+        let selfName = calcColName(colId) + rowId;
+        console.log(selfName);
+        if (!cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.includes(selfName)) {
+            cellData[selectedSheet][calRowId - 1][calColId - 1].downStream.push(selfName);
+        }
+        return false;
     }
 }
 
-function replaceData() {
-    let data = cellData[selectedSheet];
-    let searchValue = $($(".sheet-modal-input")[0]).val();
-    let replaceValue = $($(".sheet-modal-input")[1]).val();
-    if (searchValue) {
-        let rows = Object.keys(data);
-        for (let i of rows) {
-            let cols = Object.keys(data[i]);
-            for (let j of cols) {
-                if (searchValue == data[i][j]["text"]) {
-                    let searchedRow = parseInt(i) + 1;
-                    let searchedCol = parseInt(j) + 1;
-                    $(`#row-${searchedRow}-col-${searchedCol}`).text(replaceValue);
-                    cellData[selectedSheet][i][j]["text"] = replaceValue;
-                }
-            }
-        }
+function calcColId(str) {
+    let place = str.length - 1;
+    let total = 0;
+    for (let i = 0; i < str.length; i++){
+        let charValue = str.charAt(i) - 64;
+        total += Math.pow(26, place) * charValue;
+        place--;
     }
-    else {
-        $(".error").remove();
-        $(".sheet-modal-input-container").append(`
-            <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
-        `);
-    }
+    return total;
 }
