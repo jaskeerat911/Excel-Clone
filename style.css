@@ -364,13 +364,47 @@ body{
     cursor: default;
 }
 
-.sheet-options-modal, .sheet-list-modal{
+.sheet-options-modal, .sheet-list-modal, .search-options-modal{
     max-height: 10rem;
     position: absolute;
     background-color: #fff;
     box-shadow: rgb(0 0 0 / 13%) 0px 6.4px 14.4px 0px, rgb(0 0 0 / 11%) 0px 1.2px 3.6px 0px;
     overflow: auto;
 }
+
+.search-options-modal{
+    z-index: 1;
+    width: 7rem;
+    overflow: hidden;
+    padding: 10px 0;
+}
+
+.search-options-modal-title{
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.search-options{
+    font-size: 1rem;
+    width: 100%;
+}
+
+.search-option{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    padding: 10px 0;
+    padding-left: 10px;
+}
+
+.search-icon, .replace-icon, .goto-icon{
+    margin-right: 5px;
+    font-size: 22px;
+}
+
 
 .sheet-list-modal::-webkit-scrollbar{
     width: 10px;
@@ -395,7 +429,7 @@ body{
     padding: 10px 35px 10px 35px;
 }
 
-.option:hover, .sheet-list:hover {
+.option:hover, .sheet-list:hover, .search-option:hover {
     background-color: lightgray;
     cursor: default;
 }
@@ -415,7 +449,7 @@ body{
     align-items: center;
 }
 
-.sheet-rename-modal, .sheet-delete-modal {
+.sheet-rename-modal, .sheet-delete-modal, .sheet-find-modal {
     position: absolute;
     background-color: #fff;
     box-shadow: rgb(0 0 0 / 13%) 0px 6.4px 14.4px 0px, rgb(0 0 0 / 11%) 0px 1.2px 3.6px 0px;
@@ -582,4 +616,17 @@ body{
 .file-transparent-modal{
     width: 50%;
     height: 100vh;
+}
+
+.error{
+    font-size: 13px;
+    font-weight: 600;
+    color: red;
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.error-icon{
+    margin-right: 5px;
 }

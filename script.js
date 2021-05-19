@@ -304,7 +304,6 @@ $(".menu-selector").change(function (e) {
     updateCellData(key, value);
 })
 
-//need to change
 $("#border").change(function (e) {
     let value = $(this).val();
     $(".input-cell.selected").css("border", "");
@@ -318,6 +317,63 @@ $("#border").change(function (e) {
         $(".input-cell.selected").css(`border-${value}`, "3px solid #444");
     }
     updateCellData("border", value);
+})
+
+$("#search-box").click(function (e) {
+    $(".search-options-modal").remove();
+    $(this).addClass("selected");
+    let searchBoxModal = $(`<div class="search-options-modal">
+                            <div class="search-options-modal-title">Find & Select</div>
+                            <div class="search-options">
+                                <div class="search-option search">
+                                    <div class="material-icons search-icon">search</div>
+                                    <div>Find</div>
+                                </div>
+                                <div class="search-option replace">
+                                    <div class="material-icons replace-icon">edit</div>
+                                    <div>Replace</div>
+                                </div>
+                                <div class="search-option goto">
+                                    <div class="material-icons goto-icon">east</div>
+                                    <div>Goto</div>
+                                </div>
+                            </div>
+                        </div>`)
+    $(".container").append(searchBoxModal);
+    let searchPosition = $(this).position();
+    $(".search-options-modal").css({ "top": searchPosition.top + 37, "left": searchPosition.left });
+
+    $(".search").click(function () {
+        let searchModal = $(`<div class="sheet-modal-parent">
+                                <div class="sheet-find-modal">
+                                    <div class="sheet-modal-title">
+                                        <span>Find</span>
+                                    </div>
+                                    <div class="sheet-modal-input-container">
+                                        <span class="sheet-modal-input-title">Find what:</span>
+                                        <input class="sheet-modal-input" type="text">
+                                    </div>
+                                    <div class="sheet-modal-confirmation">
+                                        <div class="button ok-button">Find</div>
+                                        <div class="button cancel-button">Cancel</div>
+                                    </div>
+                                </div>
+                            </div>`)
+        $(".container").append(searchModal);
+        $(".sheet-modal-input").focus();
+
+        $(".sheet-modal-input").click(function (e) {
+            $(".error").remove();
+        })
+        
+        $(".ok-button").click(function (e) {
+            searchData();
+        })
+
+        $(".cancel-button").click(function (e) {
+            $(".sheet-modal-parent").remove();
+        })
+    })
 })
 
 $("#bold").click(function (e) {
@@ -424,11 +480,21 @@ $("#fill-color-icon, #text-color-icon").click(function (e) {
 
 $(".container").click(function(e) {
     $(".sheet-options-modal").remove();
+
     if ($(".sheet-list-modal").hasClass("active")) {
         $(".sheet-list-modal").remove();
     }
     else {
         $(".sheet-list-modal").addClass("active");
+    }
+
+    if ($(".search-options-modal").hasClass("active")) {
+        $(".search-options-modal").removeClass("active");
+        $("#search-box").removeClass("selected");
+        $(".search-options-modal").remove();
+    }
+    else {
+        $(".search-options-modal").addClass("active");
     }
 });
 
@@ -630,7 +696,7 @@ function renameSheet() {
     else {
         $(".error").remove();
         $(".sheet-modal-input-container").append(`
-            <div class = "error"> Sheet Name is not valid or Sheet already exists </div>
+            <div class = "error"><span class="material-icons error-icon">error_outline</span> Sheet Name is not valid or Sheet already exists </div>
         `);
     }
 }
@@ -924,3 +990,27 @@ $("#paste").click(function (e) {
     }
     loadSheet();
 })
+
+function searchData() {
+    let data = cellData[selectedSheet];
+    let searchValue = $(".sheet-modal-input").val();
+    if (searchValue) {
+        let rows = Object.keys(data);
+        for (let i of rows) {
+            let cols = Object.keys(data[i]);
+            for (let j of cols) {
+                if (searchValue == data[i][j]["text"]) {
+                    console.log(i, j);
+                    console.log($(`#row-${i + 1}-col-${j + 1}`));
+                    console.log($(`#row-1-col-1`));
+                }
+            }
+        }
+    }
+    else {
+        $(".error").remove();
+        $(".sheet-modal-input-container").append(`
+            <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
+        `);
+    }
+}
