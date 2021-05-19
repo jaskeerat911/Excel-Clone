@@ -333,10 +333,6 @@ $("#search-box").click(function (e) {
                                     <div class="material-icons replace-icon">edit</div>
                                     <div>Replace</div>
                                 </div>
-                                <div class="search-option goto">
-                                    <div class="material-icons goto-icon">east</div>
-                                    <div>Goto</div>
-                                </div>
                             </div>
                         </div>`)
     $(".container").append(searchBoxModal);
@@ -348,6 +344,7 @@ $("#search-box").click(function (e) {
                                 <div class="sheet-find-modal">
                                     <div class="sheet-modal-title">
                                         <span>Find</span>
+                                        <span class="material-icons close-modal">close</span>
                                     </div>
                                     <div class="sheet-modal-input-container">
                                         <span class="sheet-modal-input-title">Find what:</span>
@@ -361,18 +358,55 @@ $("#search-box").click(function (e) {
                             </div>`)
         $(".container").append(searchModal);
         $(".sheet-modal-input").focus();
+        $(".sheet-find-modal").draggable();
 
         $(".sheet-modal-input").click(function (e) {
             $(".error").remove();
-        })
+        });
         
         $(".ok-button").click(function (e) {
             searchData();
-        })
+        });
 
-        $(".cancel-button").click(function (e) {
+        $(".close-modal").click(function (e) {
             $(".sheet-modal-parent").remove();
-        })
+        });
+    });
+
+    $(".replace").click(function (e) {
+        let replaceModal = $(`<div class="sheet-modal-parent">
+                                <div class="sheet-replace-modal">
+                                    <div class="sheet-modal-title">
+                                        <span>Find and Replace</span>
+                                        <span class="material-icons close-modal">close</span>
+                                    </div>
+                                    <div class="sheet-modal-input-container">
+                                        <span class="sheet-modal-input-title">Find what:</span>
+                                        <input class="sheet-modal-input" type="text">
+                                        <span class="sheet-modal-input-title">Replace with:</span>
+                                        <input class="sheet-modal-input" type="text">
+                                    </div>
+                                    <div class="sheet-modal-confirmation">
+                                    <div class="button ok-button">Find</div>
+                                    <div class="button replace-button">Replace</div>
+                                    <div class="button cancel-button">Cancel</div>
+                                    </div>
+                                </div>
+                            </div>`);
+        $(".container").append(replaceModal);
+        $($(".sheet-modal-input")[0]).focus();
+
+        $($(".sheet-modal-input")[0]).click(function (e) {
+            $(".error").remove();
+        });
+        
+        $(".ok-button").click(function (e) {
+            searchData();
+        });
+
+        $(".close-modal").click(function (e) {
+            $(".sheet-modal-parent").remove();
+        });
     })
 })
 
