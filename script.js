@@ -340,20 +340,18 @@ $("#search-box").click(function (e) {
     $(".search-options-modal").css({ "top": searchPosition.top + 37, "left": searchPosition.left });
 
     $(".search").click(function () {
-        let searchModal = $(`<div class="sheet-modal-parent">
-                                <div class="sheet-find-modal">
-                                    <div class="sheet-modal-title">
-                                        <span>Find</span>
-                                        <span class="material-icons close-modal">close</span>
-                                    </div>
-                                    <div class="sheet-modal-input-container">
-                                        <span class="sheet-modal-input-title">Find what:</span>
-                                        <input class="sheet-modal-input" type="text">
-                                    </div>
-                                    <div class="sheet-modal-confirmation">
-                                        <div class="button ok-button">Find</div>
-                                        <div class="button cancel-button">Cancel</div>
-                                    </div>
+        let searchModal = $(`<div class="sheet-find-modal">
+                                <div class="sheet-modal-title">
+                                    <span>Find</span>
+                                    <span class="material-icons close-modal">close</span>
+                                </div>
+                                <div class="sheet-modal-input-container">
+                                    <span class="sheet-modal-input-title">Find what:</span>
+                                    <input class="sheet-modal-input" type="text">
+                                </div>
+                                <div class="sheet-modal-confirmation">
+                                    <div class="button ok-button">Find</div>
+                                    <div class="button ok-button">Find All</div>
                                 </div>
                             </div>`)
         $(".container").append(searchModal);
@@ -369,43 +367,41 @@ $("#search-box").click(function (e) {
         });
 
         $(".close-modal").click(function (e) {
-            $(".sheet-modal-parent").remove();
+            $(".sheet-find-modal").remove();
         });
     });
 
     $(".replace").click(function (e) {
-        let replaceModal = $(`<div class="sheet-modal-parent">
-                                <div class="sheet-replace-modal">
-                                    <div class="sheet-modal-title">
-                                        <span>Find and Replace</span>
-                                        <span class="material-icons close-modal">close</span>
-                                    </div>
-                                    <div class="sheet-modal-input-container">
-                                        <span class="sheet-modal-input-title">Find what:</span>
-                                        <input class="sheet-modal-input" type="text">
-                                        <span class="sheet-modal-input-title">Replace with:</span>
-                                        <input class="sheet-modal-input" type="text">
-                                    </div>
-                                    <div class="sheet-modal-confirmation">
+        let replaceModal = $(`<div class="sheet-replace-modal">
+                                <div class="sheet-modal-title">
+                                    <span>Find and Replace</span>
+                                    <span class="material-icons close-modal">close</span>
+                                </div>
+                                <div class="sheet-modal-input-container">
+                                    <span class="sheet-modal-input-title">Find what:</span>
+                                    <input class="sheet-modal-input" type="text">
+                                    <span class="sheet-modal-input-title">Replace with:</span>
+                                    <input class="sheet-modal-input" type="text">
+                                </div>
+                                <div class="sheet-modal-confirmation">
                                     <div class="button ok-button">Find</div>
                                     <div class="button replace-button">Replace</div>
-                                    <div class="button cancel-button">Cancel</div>
-                                    </div>
                                 </div>
                             </div>`);
         $(".container").append(replaceModal);
         $($(".sheet-modal-input")[0]).focus();
+        $(".sheet-replace-modal").draggable();
 
         $($(".sheet-modal-input")[0]).click(function (e) {
             $(".error").remove();
         });
         
         $(".ok-button").click(function (e) {
-            searchData();
+            replaceData();
         });
 
         $(".close-modal").click(function (e) {
-            $(".sheet-modal-parent").remove();
+            $(".sheet-replace-modal").remove();
         });
     })
 })
@@ -877,7 +873,7 @@ $("#menu-file").click(function () {
             })
 
             $(".cancel-button").click(function (e) {
-                openFile();
+                newFile();
             });
         }
     });
@@ -1034,9 +1030,40 @@ function searchData() {
             let cols = Object.keys(data[i]);
             for (let j of cols) {
                 if (searchValue == data[i][j]["text"]) {
-                    let searchedRow = parseInt(i + 1);
-                    let searchedCol = parseInt(j + 1);
-                    console.log($(`#row-${searchedRow}-col-${searchedCol}`));
+                    let searchedRow = parseInt(i) + 1;
+                    let searchedCol = parseInt(j) + 1;
+                    $(`#row-${searchedRow}-col-${searchedCol}`).addClass("selected");
+                    $(`#row-${searchedRow}-col-${searchedCol}`)[0].scrollIntoView({
+                        behavior: 'auto',
+                        block: 'center',
+                        inline: 'center'
+                    });
+                }
+            }
+        }
+    }
+    else {
+        $(".error").remove();
+        $(".sheet-modal-input-container").append(`
+            <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
+        `);
+    }
+}
+
+function replaceData() {
+    let data = cellData[selectedSheet];
+    let searchValue = $($(".sheet-modal-input")[0]).val();
+    let replaceValue = $($(".sheet-modal-input")[1]).val();
+    if (searchValue) {
+        let rows = Object.keys(data);
+        for (let i of rows) {
+            let cols = Object.keys(data[i]);
+            for (let j of cols) {
+                if (searchValue == data[i][j]["text"]) {
+                    let searchedRow = parseInt(i) + 1;
+                    let searchedCol = parseInt(j) + 1;
+                    $(`#row-${searchedRow}-col-${searchedCol}`).text(replaceValue);
+                    cellData[selectedSheet][i][j]["text"] = replaceValue;
                 }
             }
         }
