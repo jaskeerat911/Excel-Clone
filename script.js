@@ -363,7 +363,11 @@ $("#search-box").click(function (e) {
         });
         
         $(".findAll").click(function (e) {
-            searchData();
+            searchData(e);
+        });
+
+        $(".find").click(function (e) {
+            searchData(e);
         });
 
         $(".close-modal").click(function (e) {
@@ -398,7 +402,15 @@ $("#search-box").click(function (e) {
         });
         
         $(".replaceAll").click(function (e) {
-            replaceData();
+            $(".error").remove();
+            replaceData(e);
+        });
+        $(".replace").click(function (e) {
+            $(".error").remove();
+            replaceData(e);
+        });
+        $(".find").click(function (e) {
+            replaceData(e);
         });
 
         $(".close-modal").click(function (e) {
@@ -440,24 +452,44 @@ $(".alignment").click(function (e) {
     updateCellData("alignment", alignment);
 })
 
-function searchData() {
+let searchValue;
+let searchedData = [];
+let searchIdx = 0;
+let replaceIdx = 0;
+
+function searchData(e) {
     let data = cellData[selectedSheet];
-    let searchValue = $(".sheet-modal-input").val();
-    if (searchValue) {
-        let rows = Object.keys(data);
-        for (let i of rows) {
-            let cols = Object.keys(data[i]);
-            for (let j of cols) {
-                if (searchValue == data[i][j]["text"]) {
-                    let searchedRow = parseInt(i) + 1;
-                    let searchedCol = parseInt(j) + 1;
-                    $(`#row-${searchedRow}-col-${searchedCol}`).addClass("selected");
-                    $(`#row-${searchedRow}-col-${searchedCol}`)[0].scrollIntoView({
-                        behavior: 'auto',
-                        block: 'center',
-                        inline: 'center'
-                    });
+    if ($(".sheet-modal-input").val()) {
+        if (searchValue != $(".sheet-modal-input").val()) {
+            searchedData = [];
+            searchValue = $(".sheet-modal-input").val();
+            let rows = Object.keys(data);
+            for (let i of rows) {
+                let cols = Object.keys(data[i]);
+                for (let j of cols) {
+                    if (searchValue == data[i][j]["text"]) {
+                        let searchedRow = parseInt(i) + 1;
+                        let searchedCol = parseInt(j) + 1;
+                        searchedData.push($(`#row-${searchedRow}-col-${searchedCol}`));
+                    }
                 }
+            }
+        }
+
+        $(".input-cell.selected").removeClass("selected");
+        if (e.currentTarget.textContent == "Find All") {
+            for (let i of searchedData) {
+                i.addClass("selected");
+            }
+        }
+        else {
+            if (searchIdx < searchedData.length) {
+                searchedData[searchIdx].addClass("selected");
+                searchIdx++;
+            }
+            else {
+                searchedData[0].addClass("selected");
+                searchIdx = 1;
             }
         }
     }
@@ -469,21 +501,69 @@ function searchData() {
     }
 }
 
-function replaceData() {
+function replaceData(e) {
     let data = cellData[selectedSheet];
-    let searchValue = $($(".sheet-modal-input")[0]).val();
     let replaceValue = $($(".sheet-modal-input")[1]).val();
-    if (searchValue) {
-        let rows = Object.keys(data);
-        for (let i of rows) {
-            let cols = Object.keys(data[i]);
-            for (let j of cols) {
-                if (searchValue == data[i][j]["text"]) {
-                    let searchedRow = parseInt(i) + 1;
-                    let searchedCol = parseInt(j) + 1;
-                    $(`#row-${searchedRow}-col-${searchedCol}`).text(replaceValue);
-                    cellData[selectedSheet][i][j]["text"] = replaceValue;
+    if ($(".sheet-modal-input").val()) {
+        if (searchValue != $(".sheet-modal-input").val()) {
+            searchedData = [];
+            searchValue = $(".sheet-modal-input").val();
+            let rows = Object.keys(data);
+            for (let i of rows) {
+                let cols = Object.keys(data[i]);
+                for (let j of cols) {
+                    if (searchValue == data[i][j]["text"]) {
+                        let searchedRow = parseInt(i) + 1;
+                        let searchedCol = parseInt(j) + 1;
+                        searchedData.push($(`#row-${searchedRow}-col-${searchedCol}`));
+                    }
                 }
+            }
+        }
+        
+        console.log(searchedData);
+        $(".input-cell.selected").removeClass("selected");
+        if (e.currentTarget.textContent == "Replace All") {
+            if (searchedData.length == 0) {
+                $(".error").remove();
+                $(".sheet-modal-input-container").append(`<div class = "error"><span class="material-icons error-icon">error_outline</span> Cannot find anything to remove </div>`);
+            }
+            else {
+                for (let i of searchedData) {
+                    i.addClass("selected");
+                    i.text(replaceValue);
+                    let [rowId, colId] = findRowCol(i);
+                    cellData[selectedSheet][rowId - 1][colId - 1]["text"] = replaceValue;
+                    searchedData = [];
+                }
+            }
+        }
+        else if (e.currentTarget.textContent == "Replace") {
+            if (searchedData.length == 0) {
+                $(".error").remove();
+                $(".sheet-modal-input-container").append(`<div class = "error"><span class="material-icons error-icon">error_outline</span> Cannot find anything to remove </div>`);
+            }
+            else {
+                if (replaceIdx < searchedData.length) {
+                    searchedData[replaceIdx].addClass("selected");
+                    searchedData[replaceIdx].text(replaceValue);
+                    let [rowId, colId] = findRowCol(searchedData[replaceIdx]);
+                    cellData[selectedSheet][rowId - 1][colId - 1]["text"] = replaceValue;
+                    searchedData.splice(replaceIdx, 1);
+                    searchIdx = replaceIdx;
+                }
+            }
+        }
+        else {
+            if (searchIdx < searchedData.length) {
+                searchedData[searchIdx].addClass("selected");
+                replaceIdx = searchIdx;
+                searchIdx++;
+            }
+            else {
+                searchedData[0].addClass("selected");
+                replaceIdx = 0;
+                searchIdx = 1;
             }
         }
     }
@@ -493,6 +573,29 @@ function replaceData() {
             <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
         `);
     }
+    // let data = cellData[selectedSheet];
+    // let searchValue = $($(".sheet-modal-input")[0]).val();
+    // let replaceValue = $($(".sheet-modal-input")[1]).val();
+    // if (searchValue) {
+    //     let rows = Object.keys(data);
+    //     for (let i of rows) {
+    //         let cols = Object.keys(data[i]);
+    //         for (let j of cols) {
+    //             if (searchValue == data[i][j]["text"]) {
+    //                 let searchedRow = parseInt(i) + 1;
+    //                 let searchedCol = parseInt(j) + 1;
+    //                 $(`#row-${searchedRow}-col-${searchedCol}`).text(replaceValue);
+    //                 cellData[selectedSheet][i][j]["text"] = replaceValue;
+    //             }
+    //         }
+    //     }
+    // }
+    // else {
+    //     $(".error").remove();
+    //     $(".sheet-modal-input-container").append(`
+    //         <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
+    //     `);
+    // }
 }
 
 function updateCellData(property, value) {
