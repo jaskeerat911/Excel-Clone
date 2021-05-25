@@ -573,29 +573,6 @@ function replaceData(e) {
             <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
         `);
     }
-    // let data = cellData[selectedSheet];
-    // let searchValue = $($(".sheet-modal-input")[0]).val();
-    // let replaceValue = $($(".sheet-modal-input")[1]).val();
-    // if (searchValue) {
-    //     let rows = Object.keys(data);
-    //     for (let i of rows) {
-    //         let cols = Object.keys(data[i]);
-    //         for (let j of cols) {
-    //             if (searchValue == data[i][j]["text"]) {
-    //                 let searchedRow = parseInt(i) + 1;
-    //                 let searchedCol = parseInt(j) + 1;
-    //                 $(`#row-${searchedRow}-col-${searchedCol}`).text(replaceValue);
-    //                 cellData[selectedSheet][i][j]["text"] = replaceValue;
-    //             }
-    //         }
-    //     }
-    // }
-    // else {
-    //     $(".error").remove();
-    //     $(".sheet-modal-input-container").append(`
-    //         <div class = "error"><span class="material-icons error-icon">error_outline</span> Search value does not exists </div>
-    //     `);
-    // }
 }
 
 function updateCellData(property, value) {
@@ -1149,8 +1126,6 @@ $("#copy, #cut").click(function (e) {
         contentCutted = true;
     }
     clipBoard.startCell = findRowCol($(".input-cell.selected")[0]);
-    copiedCell = $(".input-cell.selected");
-    copiedCell.addClass("rotating-dashed")
     $(".input-cell.selected").each((index, data) => {
         let [rowId, colId] = findRowCol(data);
         if (cellData[selectedSheet][rowId - 1] && cellData[selectedSheet][rowId - 1][colId - 1]) {

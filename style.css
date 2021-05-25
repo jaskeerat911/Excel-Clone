@@ -173,21 +173,21 @@ body{
 }
 
 #select-all{
-    width: 25px;
+    width: 35px;
     height: 25px;
     border: 1px solid lightgray;
 }
 
 #columns{
     height: 25px;
-    width: calc(100vw - 25px);
+    width: calc(100vw - 35px);
     border: 1px solid lightgray;
     display: flex;
     overflow: hidden;
 }
 
 #rows{
-    width: 25px;
+    width: 35px;
     height: calc(75vh - 25px);
     border: 1px solid lightgray;
     overflow: hidden;
@@ -196,7 +196,7 @@ body{
 #cells{
     position: relative;
     height: calc(75vh - 25px);
-    width: calc(100vw - 25px);
+    width: calc(100vw - 35px);
     border: 1px solid lightgray;
     overflow: scroll;
 }
@@ -259,6 +259,23 @@ body{
     border: 3px solid #107c41;
     outline-color: #107c41;
     width: 200px;
+}
+
+.input-cell.copied-data{
+    background-image: linear-gradient(90deg, #444 50%, transparent 50%), linear-gradient(90deg, #444 50%, transparent 50%), linear-gradient(0deg, #444 50%, transparent 50%), linear-gradient(0deg, #444 50%, transparent 50%);
+    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+    background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
+    background-position: left top, right bottom, left bottom, right   top;
+    animation: border-dance 1s infinite linear;
+}
+
+@keyframes border-dance {
+    0% {
+        background-position: left top, right bottom, left bottom, right   top;
+    }
+    100% {
+        background-position: left 15px top, right 15px bottom , left bottom 15px , right   top 15px;
+    }
 }
 
 .input-cell.top-selected{
