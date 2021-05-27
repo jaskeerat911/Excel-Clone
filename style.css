@@ -607,7 +607,7 @@ body{
     top: 0;
     left: 0;
     height: 100vh;
-    width: 0vw;
+    width: 100vw;
     display: flex;
 }
 
@@ -623,6 +623,54 @@ body{
     width: calc(50% - 12rem);
     background-color: #fff;
     box-shadow: 0 0 10px 0;
+    padding: 3rem;
+}
+
+.file-recent-modal-title{
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.recent-files-container{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.recent-file{
+    width: 8rem;
+    height: 8rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+.recent-file:hover{
+    cursor: pointer;
+    background-color: rgb(224, 224, 224);
+}
+
+.recent-file:hover .recent-file-icon-container{
+    border: 1px solid #444;
+}
+
+.recent-file-icon-container{
+    width: 90%;
+    height: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid lightgray;
+    margin-bottom: 5px;
+}
+
+.recent-file-icon{
+    font-size: 2.5rem;
 }
 
 .close, .new, .open, .save{

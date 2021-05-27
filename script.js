@@ -946,29 +946,49 @@ $("#zoom-out").click(function (e) {
 
 $("#menu-file").click(function () {
     let fileModal = $(`<div class="file-modal">
-                            <div class="file-options-modal">
-                                <div class="close">
-                                    <div class="material-icons close-icon">arrow_circle_down</div>
-                                    <div>Close</div>
+                        <div class="file-options-modal">
+                            <div class="close">
+                                <div class="material-icons close-icon">arrow_circle_down</div>
+                                <div>Close</div>
+                            </div>
+                            <div class="new">
+                                <div class="material-icons new-icon">insert_drive_file</div>
+                                <div>New</div>
+                            </div>
+                            <div class="open">
+                                <div class="material-icons open-icon">folder_open</div>
+                                <div>Open</div>
+                            </div>
+                            <div class="save">
+                                <div class="material-icons save-icon">save</div>
+                                <div>Save</div>
+                            </div>
+                        </div>
+                        <div class="file-recent-modal">
+                            <div class="file-recent-modal-title">Recent</div>
+                            <div class="recent-files-container">
+                                <div class="recent-file">
+                                    <div class="recent-file-icon-container">
+                                        <div class="material-icons recent-file-icon">description</div>
+                                    </div>
+                                    <div class="recent-file-title">File name</div>
                                 </div>
-                                <div class="new">
-                                    <div class="material-icons new-icon">insert_drive_file</div>
-                                    <div>New</div>
+                                <div class="recent-file">
+                                    <div class="recent-file-icon-container">
+                                        <div class="material-icons recent-file-icon">description</div>
+                                    </div>
+                                    <div class="recent-file-title">File name</div>
                                 </div>
-                                <div class="open">
-                                    <div class="material-icons open-icon">folder_open</div>
-                                    <div>Open</div>
-                                </div>
-                                <div class="save">
-                                    <div class="material-icons save-icon">save</div>
-                                    <div>Save</div>
+                                <div class="recent-file">
+                                    <div class="recent-file-icon-container">
+                                        <div class="material-icons recent-file-icon">description</div>
+                                    </div>
+                                    <div class="recent-file-title">File name</div>
                                 </div>
                             </div>
-                            <div class="file-recent-modal">
-
-                            </div>
-                            <div class="file-transparent-modal"></div>
-                        </div>`);
+                        </div>
+                        <div class="file-transparent-modal"></div>
+                    </div>`);
     $(".container").append(fileModal);
     fileModal.animate({
         "width": "100vw"
