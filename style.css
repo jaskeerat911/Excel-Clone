@@ -148,7 +148,7 @@ body{
     height: 70%;
 }
 
-#function-input {
+#formula-input {
     width: calc(100vw - 160px);
     height: 70%;
 }
